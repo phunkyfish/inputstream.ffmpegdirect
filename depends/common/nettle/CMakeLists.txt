@@ -15,11 +15,16 @@ list(APPEND nettle_conf LIBS=-lgmp)
 include(ExternalProject)
 externalproject_add(nettle
                     SOURCE_DIR ${CMAKE_SOURCE_DIR}
+                    UPDATE_COMMAND <SOURCE_DIR>/.bootstrap
                     CONFIGURE_COMMAND <SOURCE_DIR>/configure
                       --prefix=${CMAKE_INSTALL_PREFIX}
+                      --libdir=${CMAKE_INSTALL_PREFIX}/lib
                       --disable-shared
                       --disable-openssl
+                      --enable-pic
                       CCPIC=
-                      ${nettle_conf})
+                      ${nettle_conf}
+                    INSTALL_COMMAND ""
+                    BUILD_IN_SOURCE 1)
 
-install(CODE "Message(Done)")
+install(CODE "execute_process(COMMAND make install WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})")

@@ -11,11 +11,13 @@ if (CORE_SYSTEM_NAME STREQUAL osx)
   list(APPEND zvbi_conf CFLAGS=-fnested-functions)
 elseif (CORE_SYSTEM_NAME STREQUAL android)
   list(APPEND zvbi_conf LIBS=-liconv)
+  set(zvbi_ldflags "LDFLAGS= -pthread -lpthread")
 endif()
 
 include(ExternalProject)
 externalproject_add(zvbi
                     SOURCE_DIR ${CMAKE_SOURCE_DIR}
+                    UPDATE_COMMAND autoreconf -vif
                     CONFIGURE_COMMAND <SOURCE_DIR>/configure
                       --prefix=${CMAKE_INSTALL_PREFIX}
                       --enable-shared=no
@@ -25,6 +27,8 @@ externalproject_add(zvbi
                       --disable-nls
                       --disable-proxy
                       --without-doxygen
+                      --with-pic
+                      --without-x
                       ${zvbi_ldflags}
                       ${zvbi_conf})
 

@@ -1,1 +1,1 @@
-nettle http://mirrors.kodi.tv/build-deps/sources/nettle-3.2.tar.gz
+nettle https://git.lysator.liu.se/nettle/nettle/-/archive/nettle_3.5.1_release_20190627/nettle-nettle_3.5.1_release_20190627.tar.gz

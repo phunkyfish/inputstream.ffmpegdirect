@@ -36,6 +36,7 @@ externalproject_add(gmp
                       ${COMPILER_WITH_LIBTOOL_SYSROOT_APPLE}
                       --prefix=${CMAKE_INSTALL_PREFIX}
                       --disable-shared
+                      --with-pic
                       ${gmp_conf})
 
 install(CODE "Message(Done)")
