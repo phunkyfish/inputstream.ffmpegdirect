@@ -1,0 +1,20 @@
+From: Alwin Esch <alwin.esch@web.de>
+Date: Sat, 18 Jan 2020 14:24:32 +0000
+Subject: [PATCH] add xz-config.cmake
+
+---
+ cmake/xz-config.cmake | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 cmake/xz-config.cmake
+
+diff --git a/cmake/xz-config.cmake b/cmake/xz-config.cmake
+new file mode 100644
+index 00000000..7eb2ca28
+--- /dev/null
++++ b/cmake/xz-config.cmake
+@@ -0,0 +1 @@
++include(${CMAKE_CURRENT_LIST_DIR}/xz.cmake)
+\ No newline at end of file
+-- 
+2.19.2.windows.1
+
