@@ -1,0 +1,27 @@
+--- /dev/null
++++ b/MinGWConfig.cmake.in
+@@ -0,0 +1,23 @@
++set(MINGW_MAKE @CMAKE_CURRENT_SOURCE_DIR@/@MINGW_PATH@/bin/make.bat)
++set(MINGW_BASH_DIR @CMAKE_CURRENT_SOURCE_DIR@/@MINGW_PATH@/bin)
++
++function(convertPathToPosix WIN_PATH)
++  string(REGEX MATCH  "^(.*:)" DRIVE_NAME ${WIN_PATH})
++  string(TOLOWER ${DRIVE_NAME} DRIVE_NAME)
++  string(REGEX REPLACE "^(.*:)" "" PATH_NAME ${WIN_PATH})
++  set(POSIX_PATH "${DRIVE_NAME}${PATH_NAME}")
++  string(REGEX REPLACE "^([a-zA-Z]):\/" "/mnt/\\1/" POSIX_PATH ${POSIX_PATH})
++  set(POSIX_PATH ${POSIX_PATH} PARENT_SCOPE)
++endfunction()
++
++convertPathToPosix(${CMAKE_SOURCE_DIR})
++set(MINGW_SOURCE_DIR ${POSIX_PATH})
++convertPathToPosix(${CMAKE_INSTALL_PREFIX})
++set(MINGW_INSTALL_PREFIX ${POSIX_PATH})
++convertPathToPosix(${CMAKE_CURRENT_BINARY_DIR})
++set(MINGW_BUILD_DIRECTORY ${POSIX_PATH})
++
++set(MINGW_CALL cmake -E chdir ${MINGW_BASH_DIR}
++               bash.exe ${MINGW_INSTALL_PREFIX}/caller.sh
++               ${MINGW_SOURCE_DIR}
++               ${MINGW_BUILD_DIRECTORY})
+

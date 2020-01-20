@@ -1,0 +1,54 @@
+From eb3a66829a3e95a06e259f16b12863c48e70e386 Mon Sep 17 00:00:00 2001
+From: Alwin Esch <alwin.esch@web.de>
+Date: Sat, 18 Jan 2020 11:38:03 +0000
+Subject: [PATCH 2/2] caller.sh
+
+---
+ caller.sh | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+ create mode 100644 caller.sh
+
+diff --git a/caller.sh b/caller.sh
+new file mode 100644
+index 0000000..f3530f4
+--- /dev/null
++++ b/caller.sh
+@@ -0,0 +1,35 @@
++#!/bin/bash
++
++DOUBLE_QUOTES_PSEUDO="\[DQ\]"
++DOUBLE_QUOTES="\""
++
++CALLCMD=$@
++
++# First change to wanted directory
++MINGW_SOURCE_DIR=`echo $CALLCMD | awk '{print $1;}'`
++CALLCMD=`echo $CALLCMD | cut -d " " -f2-`
++cd "$MINGW_SOURCE_DIR"
++
++# Get the cmake build directory
++MINGW_BUILD_DIRECTORY=`echo $CALLCMD | awk '{print $1;}'`
++CALLCMD=`echo $CALLCMD | cut -d " " -f2-`
++
++# Change pseudo double quote to right one (cmake ExternalProject fix where not
++# give them correct)
++CALLCMD=`echo $CALLCMD | sed -e "s/$DOUBLE_QUOTES_PSEUDO/$DOUBLE_QUOTES/g"`
++
++# As next check for defined values and export
++for VALUE in $CALLCMD; do
++  if [[ $VALUE == *"="* ]]; then
++    export $VALUE
++  else
++    break
++  fi
++done
++
++# Write command to temporary bash script (to prevent quote problem)
++echo "$CALLCMD" > "$MINGW_BUILD_DIRECTORY/bash-caller.sh"
++chmod +x "$MINGW_BUILD_DIRECTORY/bash-caller.sh"
++
++# Call given commands
++bash "$MINGW_BUILD_DIRECTORY/bash-caller.sh"
+-- 
+2.19.2.windows.1
+
