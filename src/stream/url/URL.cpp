@@ -47,14 +47,10 @@ std::string ValidatePath(const std::string &path)//, bool bFixDoubleSlashes /* =
     return result;
 
   // check the path for incorrect slashes
-#ifdef TARGET_WINDOWS
+/*#ifdef TARGET_WINDOWS
   if (URIUtils::IsDOSPath(path))
   {
     StringUtils::Replace(result, '/', '\\');
-    /* The double slash correction should only be used when *absolutely*
-       necessary! This applies to certain DLLs or use from Python DLLs/scripts
-       that incorrectly generate double (back) slashes.
-    */
     if (bFixDoubleSlashes && !result.empty())
     {
       // Fixup for double back slashes (but ignore the \\ of unc-paths)
@@ -66,7 +62,7 @@ std::string ValidatePath(const std::string &path)//, bool bFixDoubleSlashes /* =
     }
   }
   else if (path.find("://") != std::string::npos || path.find(":\\\\") != std::string::npos)
-#endif
+#endif*/
   {
     StringUtils::Replace(result, '\\', '/');
     /* The double slash correction should only be used when *absolutely*
