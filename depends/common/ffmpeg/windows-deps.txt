@@ -1,0 +1,6 @@
+libpng
+libxml2
+openssl
+mingw
+xz-utils
+zlib

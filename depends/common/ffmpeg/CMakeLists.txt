@@ -89,43 +89,119 @@ endif()
 
 message(STATUS "FFMPEG_CONF: ${ffmpeg_conf}")
 
-include(ExternalProject)
-externalproject_add(ffmpeg
-                    SOURCE_DIR ${CMAKE_SOURCE_DIR}
-                    CONFIGURE_COMMAND PKG_CONFIG_PATH=${CMAKE_INSTALL_PREFIX}/lib/pkgconfig ${CMAKE_SOURCE_DIR}/configure
-                      --prefix=${CMAKE_INSTALL_PREFIX}
-                      --extra-version="kodi-${FFMPEG_VER}"
-                      --disable-devices
-                      --disable-doc
-                      --disable-ffplay
-                      --disable-ffmpeg
-                      --disable-ffprobe
-                      --enable-gpl
-                      --enable-runtime-cpudetect
-                      --enable-postproc
-                      --enable-pthreads
-                      --enable-muxer=spdif
-                      --enable-muxer=adts
-                      --enable-muxer=asf
-                      --enable-muxer=ipod
-                      --enable-encoder=ac3
-                      --enable-encoder=aac
-                      --enable-encoder=wmav2
-                      --enable-protocol=http
-                      --enable-encoder=png
-                      --enable-encoder=mjpeg
-                      --enable-gnutls
-                      --enable-demuxer=dash
-                      --enable-libxml2
-                      --enable-libzvbi
-                      ${ffmpeg_conf})
+# Init base values given on build to ffmpeg
+set(STANDARD_OPTION "")
+set(EXTRA_OPTION "")
+set(EXTRA_CFLAGS "")
+set(EXTRA_LDFLAGS "")
 
-if(CORE_SYSTEM_NAME STREQUAL darwin_embedded)
-  externalproject_add_step(ffmpeg
-                           RunSedCommand
-                           COMMAND echo "Setting HAVE_CLOCK_GETTIME to 0 for darwin_embedded using sed"
-                           COMMAND sed -i -- "s/HAVE_CLOCK_GETTIME 1/HAVE_CLOCK_GETTIME 0/g" ${CMAKE_CURRENT_BINARY_DIR}/ffmpeg-prefix/src/ffmpeg-build/config.h
-                           DEPENDEES configure)
+# Read version fo ffmpeg to define on extra version
+file(STRINGS "${CMAKE_SOURCE_DIR}/RELEASE" FFMPEG_VER)
+
+# Set the basic ffmpeg configure options (same on all OS)
+list(APPEND STANDARD_OPTION --extra-version=kodi-${FFMPEG_VER}
+                            --disable-devices
+                            --disable-doc
+                            --disable-ffplay
+                            --disable-ffmpeg
+                            --disable-ffprobe
+                            --enable-gpl
+                            --enable-runtime-cpudetect
+                            --enable-postproc
+                            --enable-muxer=spdif
+                            --enable-muxer=adts
+                            --enable-muxer=asf
+                            --enable-muxer=ipod
+                            --enable-encoder=ac3
+                            --enable-encoder=aac
+                            --enable-encoder=wmav2
+                            --enable-protocol=http
+                            --enable-encoder=png
+                            --enable-encoder=mjpeg
+                            --enable-demuxer=dash
+                            --enable-libxml2
+                            --enable-zlib
+                            --enable-static)
+
+# Determinate debug or release and set ffmpeg for
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  list(APPEND EXTRA_OPTION --enable-debug)
+else()
+  list(APPEND EXTRA_OPTION --disable-debug)
+endif()
+
+# Run the builds
+include(ExternalProject)
+if(NOT WIN32)
+  externalproject_add(ffmpeg
+                      SOURCE_DIR ${CMAKE_SOURCE_DIR}
+                      CONFIGURE_COMMAND PKG_CONFIG_PATH=${CMAKE_INSTALL_PREFIX}/lib/pkgconfig ${CMAKE_SOURCE_DIR}/configure
+                        --prefix=${CMAKE_INSTALL_PREFIX}
+                        --enable-pthreads
+                        --enable-gnutls
+                        --enable-libzvbi
+                        ${STANDARD_OPTION}
+                        ${EXTRA_OPTION}
+                        ${ffmpeg_conf})
+
+  if(CORE_SYSTEM_NAME STREQUAL darwin_embedded)
+    externalproject_add_step(ffmpeg
+                            RunSedCommand
+                            COMMAND echo "Setting HAVE_CLOCK_GETTIME to 0 for darwin_embedded using sed"
+                            COMMAND sed -i -- "s/HAVE_CLOCK_GETTIME 1/HAVE_CLOCK_GETTIME 0/g" ${CMAKE_CURRENT_BINARY_DIR}/ffmpeg-prefix/src/ffmpeg-build/config.h
+                            DEPENDEES configure)
+  endif()
+else()
+  find_package(MinGW REQUIRED)
+
+  list(APPEND EXTRA_CFLAGS -I${CMAKE_INSTALL_PREFIX}/include
+                           -I${CMAKE_INSTALL_PREFIX}/include/libxml2
+                           -DWIN32_LEAN_AND_MEAN)
+  list(APPEND EXTRA_LDFLAGS -LIBPATH:${CMAKE_INSTALL_PREFIX}/lib)
+  if(CMAKE_SYSTEM_NAME STREQUAL WindowsStore)
+    list(APPEND EXTRA_OPTION --enable-cross-compile)
+    list(APPEND EXTRA_CFLAGS -MD -DWINAPI_FAMILY=WINAPI_FAMILY_APP -D_WIN32_WINNT=0x0A00)
+    list(APPEND EXTRA_LDFLAGS -APPCONTAINER WindowsApp.lib)
+  endif()
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    list(APPEND EXTRA_CFLAGS -MDd)
+    list(APPEND EXTRA_LDFLAGS -NODEFAULTLIB:libcmt)
+  endif()
+
+  include(CheckSymbolExists)
+  check_symbol_exists(_X86_ "Windows.h" _X86_)
+  check_symbol_exists(_AMD64_ "Windows.h" _AMD64_)
+
+  if(_X86_)
+    set(EXTRA_ARCH "x86")
+    list(APPEND EXTRA_OPTION --target-os=win32 --cpu=i686)
+  elseif(_AMD64_)
+    set(EXTRA_ARCH "x86_64")
+    list(APPEND EXTRA_OPTION --target-os=win64)
+  else()
+    set(EXTRA_ARCH "arm")
+    list(APPEND EXTRA_OPTION --target-os=win32 --cpu=armv7)
+  endif()
+
+  externalproject_add(ffmpeg
+                      SOURCE_DIR ${CMAKE_SOURCE_DIR}
+                      CONFIGURE_COMMAND ${MINGW_CALL}
+                        PKG_CONFIG_PATH=${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
+                        ./configure
+                          --prefix=${MINGW_INSTALL_PREFIX}
+                          --arch=${EXTRA_ARCH}
+                          --toolchain=msvc
+                          --enable-w32threads
+                          --disable-gnutls
+                          --disable-libzvbi
+                          ${STANDARD_OPTION}
+                          ${EXTRA_OPTION}
+                          --extra-cflags=[DQ]${EXTRA_CFLAGS}[DQ]
+                          --extra-ldflags=[DQ]${EXTRA_LDFLAGS}[DQ]
+                      BUILD_COMMAND ${MINGW_CALL}
+                        make -j$ENV{NUMBER_OF_PROCESSORS}
+                      INSTALL_COMMAND ${MINGW_CALL}
+                        make install)
 endif()
 
 install(CODE "Message(Done)")

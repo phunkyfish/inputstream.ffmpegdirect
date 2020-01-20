@@ -16,7 +16,7 @@ index 34c2adb..957e502 100755
      log require_pkg_config "$@"
      pkg_version="$2"
 -    check_pkg_config "$@" || die "ERROR: $pkg_version not found using pkg-config$pkg_config_fail_message"
-+    check_pkg_config "$@" || echo "ERROR: $pkg_version not found using pkg-config$pkg_config_fail_message"
++    #check_pkg_config "$@" || die "ERROR: $pkg_version not found using pkg-config$pkg_config_fail_message"
  }
  
  test_host_cc(){

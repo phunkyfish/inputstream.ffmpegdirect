@@ -1,4 +1,5 @@
 nettle
 gnutls
+zlib
 zvbi
 libxml2
