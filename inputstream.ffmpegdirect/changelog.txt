@@ -1,3 +1,9 @@
+v1.6.1
+- Update: remove unrequired gnutls patch
+- Fixed: Replace ;'s workaround for cmake bug for ffmpeg LDFLAGS
+- Added: Patch for ffmpeg using rtp protocol where sources option is not retained
+- Update: Document programme_catchup_id stream property in README
+
 v1.6.0
 - Added: Support catchup-id stream property
 - Added: Enable pthreads for FFmpeg on Windows to allow circular buffer for UDP streams

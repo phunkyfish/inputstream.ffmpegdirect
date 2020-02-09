@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="inputstream.ffmpegdirect"
-  version="1.6.0"
+  version="1.6.1"
   name="Inputstream FFmpeg Direct"
   provider-name="phunkyfish">
   <requires>@ADDON_DEPENDS@</requires>
@@ -23,6 +23,12 @@
       <fanart>fanart.jpg</fanart>
     </assets>
     <news>
+v1.6.1
+- Update: remove unrequired gnutls patch
+- Fixed: Replace ;'s workaround for cmake bug for ffmpeg LDFLAGS
+- Added: Patch for ffmpeg using rtp protocol where sources option is not retained
+- Update: Document programme_catchup_id stream property in README
+
 v1.6.0
 - Added: Support catchup-id stream property
 - Added: Enable pthreads for FFmpeg on Windows to allow circular buffer for UDP streams
