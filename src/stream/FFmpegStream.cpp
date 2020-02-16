@@ -1991,6 +1991,25 @@ AVDictionary* FFmpegStream::GetFFMpegOptionsFromInput()
       //   av_dict_set(&options, "cookies", cookies.c_str(), 0);
     }
   }
+  else if (url.IsProtocol("udp") || url.IsProtocol("rtp"))
+  {
+    std::string strURL = url.Get();
+    size_t found = strURL.find("://");
+    if (found != std::string::npos)
+    {
+      size_t start = found + 3;
+      found = strURL.find("@");
+      if (found != std::string::npos && found > start)
+      {
+        // sourceip found
+        std::string strSourceIp = strURL.substr(start, found - start);
+        Log(LOGLEVEL_DEBUG,
+                  "CDVDDemuxFFmpeg::GetFFMpegOptionsFromInput() UDP/RTP sources '%s'",
+                  strSourceIp.c_str());
+        av_dict_set(&options, "sources", strSourceIp.c_str(), 0);
+      }
+    }
+  }
 
   // if (input)
   // {

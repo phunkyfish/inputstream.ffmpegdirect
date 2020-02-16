@@ -23,6 +23,8 @@
       <fanart>fanart.jpg</fanart>
     </assets>
     <news>
+- Fixed: Add ffmpeg options as AVDictionary in addition to URL for udp/rtp
+
 v1.6.1
 - Update: remove unrequired gnutls patch
 - Fixed: Replace ;'s workaround for cmake bug for ffmpeg LDFLAGS
